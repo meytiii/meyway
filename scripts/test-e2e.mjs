@@ -124,7 +124,7 @@ const scannerProbes = [
   '/admin', '/admin/', '/panel', '/panel/', '/login', '/dashboard',
   '/portal', '/sub', '/api', '/api/state', '/api/bootstrap',
   '/ws', '/health', '/metrics', '/config.json',
-  '/assets/v2rayn.png', '/assets/sing-box.svg', '/assets/hiddify.svg',
+  '/assets/v2rayn.png', '/assets/sing-box.svg', '/assets/hiddify.svg', '/assets/logo.png',
   '/style.css', '/extra.css', '/app.js', '/sprite.svg',
   '/fonts/JetBrainsMono-Regular.woff2', '/fonts/Vazirmatn-Regular.woff2',
   `/${SUB_PATH}/invalid-token-123`,
@@ -209,6 +209,9 @@ assert(`Font /${ADMIN_PATH}/fonts/Vazirmatn-Regular.woff2 loads 200 OK`, font2Re
 
 const clientLogoRes = await request(`/${ADMIN_PATH}/assets/v2rayng.png`);
 assert(`Client logo asset /${ADMIN_PATH}/assets/v2rayng.png loads 200 OK`, clientLogoRes.status === 200 && clientLogoRes.headers['content-type'].includes('image/png'));
+
+const projectLogoRes = await request(`/${ADMIN_PATH}/assets/logo.png`);
+assert(`Project logo /${ADMIN_PATH}/assets/logo.png loads 200 OK`, projectLogoRes.status === 200 && projectLogoRes.headers['content-type'].includes('image/png'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. FULL API & AUTHENTICATION LIFECYCLE

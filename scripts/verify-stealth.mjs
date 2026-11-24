@@ -129,6 +129,7 @@ const probes = [
   '/health',
   '/assets/v2rayn.png',
   '/assets/sing-box.svg',
+  '/assets/logo.png',
   '/style.css',
   '/app.js',
   '/sprite.svg',
@@ -190,6 +191,9 @@ assert(`Admin font loads under /${ADMIN_PATH}/fonts/...`, adminFontRes.status ==
 
 const adminAppRes = await req(`/${ADMIN_PATH}/app.js`);
 assert(`Admin JS module loads under /${ADMIN_PATH}/app.js`, adminAppRes.status === 200);
+
+const adminLogoRes = await req(`/${ADMIN_PATH}/assets/logo.png`);
+assert(`Admin logo asset loads under /${ADMIN_PATH}/assets/logo.png`, adminLogoRes.status === 200 && adminLogoRes.headers['content-type'].includes('image/png'));
 
 const adminApiRes = await req(`/${ADMIN_PATH}/api/bootstrap`);
 assert(`Admin API loads under /${ADMIN_PATH}/api/bootstrap`, adminApiRes.status === 200 && adminApiRes.body.includes('needsSetup'));
