@@ -173,13 +173,23 @@ assert('Zero keyword leaks in all public HTTP headers and bodies', leakCount ===
 
 console.log('\n── 3. Functional Test ──');
 
-// Admin panel loads under secret path
+// Admin panel loads under secret path (both without and with trailing slash)
 const adminRes = await req(`/${ADMIN_PATH}`);
 assert(`Admin panel loads under /${ADMIN_PATH}`, adminRes.status === 200 && adminRes.body.includes('Control Console'));
+assert('Admin panel injects <base href="..."> at top of head', adminRes.body.includes(`<head><base href="/${ADMIN_PATH}/">`));
 assert('Admin panel injects window.__ADMIN_BASE_PATH', adminRes.body.includes(`window.__ADMIN_BASE_PATH="/${ADMIN_PATH}"`));
 
+const adminSlashRes = await req(`/${ADMIN_PATH}/`);
+assert(`Admin panel loads under /${ADMIN_PATH}/ (with trailing slash)`, adminSlashRes.status === 200 && adminSlashRes.body.includes('Control Console'));
+
+const adminCssRes = await req(`/${ADMIN_PATH}/style.css`);
+assert(`Admin stylesheet loads under /${ADMIN_PATH}/style.css`, adminCssRes.status === 200 && adminCssRes.body.includes('./fonts/'));
+
+const adminFontRes = await req(`/${ADMIN_PATH}/fonts/JetBrainsMono-Regular.woff2`);
+assert(`Admin font loads under /${ADMIN_PATH}/fonts/...`, adminFontRes.status === 200);
+
 const adminAppRes = await req(`/${ADMIN_PATH}/app.js`);
-assert(`Admin assets load under /${ADMIN_PATH}/app.js`, adminAppRes.status === 200);
+assert(`Admin JS module loads under /${ADMIN_PATH}/app.js`, adminAppRes.status === 200);
 
 const adminApiRes = await req(`/${ADMIN_PATH}/api/bootstrap`);
 assert(`Admin API loads under /${ADMIN_PATH}/api/bootstrap`, adminApiRes.status === 200 && adminApiRes.body.includes('needsSetup'));
@@ -187,6 +197,13 @@ assert(`Admin API loads under /${ADMIN_PATH}/api/bootstrap`, adminApiRes.status 
 // Portal loads under secret path with valid token
 const portalRes = await req(`/${PORTAL_PATH}/${userSubToken}`);
 assert(`Portal loads under /${PORTAL_PATH}/${userSubToken}`, portalRes.status === 200 && portalRes.body.includes('Subscriber'));
+assert('Portal injects <base href="..."> for assets', portalRes.body.includes(`<base href="/${PORTAL_PATH}/">`));
+
+const portalCssRes = await req(`/${PORTAL_PATH}/style.css`);
+assert(`Portal stylesheet loads under /${PORTAL_PATH}/style.css`, portalCssRes.status === 200);
+
+const portalFontRes = await req(`/${PORTAL_PATH}/fonts/Vazirmatn-Regular.woff2`);
+assert(`Portal font loads under /${PORTAL_PATH}/fonts/...`, portalFontRes.status === 200);
 
 const portalJsonRes = await req(`/${PORTAL_PATH}/${userSubToken}?json=1`);
 const portalData = JSON.parse(portalJsonRes.body);

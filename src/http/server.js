@@ -45,7 +45,9 @@ function staticEntry(file, injectScript = '') {
 
   if (injectScript && ext === '.html') {
     let str = raw.toString('utf8');
-    if (str.includes('</head>')) {
+    if (str.includes('<head>')) {
+      str = str.replace('<head>', `<head>${injectScript}`);
+    } else if (str.includes('</head>')) {
       str = str.replace('</head>', `${injectScript}</head>`);
     } else {
       str = `${injectScript}${str}`;
@@ -125,7 +127,7 @@ export function createPanelServer({ runtime, api }) {
 
     // 2. Secret Gated Admin Panel & APIs
     if (url.pathname === adminPrefix || url.pathname === `${adminPrefix}/` || url.pathname === `${adminPrefix}/index.html`) {
-      const injectScript = `<script>window.__ADMIN_BASE_PATH="${adminPrefix}";</script>`;
+      const injectScript = `<base href="${adminPrefix}/"><script>window.__ADMIN_BASE_PATH="${adminPrefix}";</script>`;
       serveGatedStatic(req, res, 'index.html', injectScript);
       return;
     }

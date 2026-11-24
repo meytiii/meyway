@@ -285,8 +285,6 @@ export function singboxJson(doc, user) {
     .map((l) => singboxOutbound(l, user, doc.settings || {}))
     .filter(Boolean);
   const tags = outbounds.map((o) => o.tag);
-  const sbsDns = singboxDns(route);
-  const ruleSets = singboxRuleSets(route);
   return {
     log: { level: 'warn', timestamp: true },
     dns: {
@@ -392,24 +390,8 @@ export function clashYaml(doc, user) {
   if (!names.length) lines.push('      - DIRECT');
   lines.push('      - DIRECT');
   lines.push('');
-  const providers = clashProviders(route);
-  if (Object.keys(providers).length) {
-    lines.push('rule-providers:');
-    for (const [key, p] of Object.entries(providers)) {
-      lines.push(
-        `  ${key}:`,
-        `    type: ${p.type}`,
-        `    behavior: ${p.behavior}`,
-        `    format: ${p.format}`,
-        `    url: "${p.url}"`,
-        `    path: ${p.path}`,
-        `    interval: ${p.interval}`,
-      );
-    }
-    lines.push('');
-  }
   lines.push('rules:');
-  for (const rule of clashRules(route)) lines.push(`  - ${rule}`);
+  lines.push('  - GEOIP,IR,DIRECT');
   lines.push('  - MATCH,MEYWAY');
   return lines.join('\n') + '\n';
 }

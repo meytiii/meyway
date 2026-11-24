@@ -880,8 +880,10 @@ function handleSubscription({ req, res, url, runtime, onInvalid, portalBasePath,
     if (url.searchParams.get('json') === '1') return send(res, 200, info);
     try {
       let page = readFileSync(new URL('../../public/portal.html', import.meta.url), 'utf8');
-      const injection = `<script>window.__PORTAL_BASE_PATH="${activePortalPath}";window.__SUB_BASE_PATH="${activeSubPath}";</script>`;
-      page = page.includes('</head>') ? page.replace('</head>', `${injection}</head>`) : `${injection}${page}`;
+      const injection = `<base href="${activePortalPath}/"><script>window.__PORTAL_BASE_PATH="${activePortalPath}";window.__SUB_BASE_PATH="${activeSubPath}";</script>`;
+      page = page.includes('<head>')
+        ? page.replace('<head>', `<head>${injection}`)
+        : (page.includes('</head>') ? page.replace('</head>', `${injection}</head>`) : `${injection}${page}`);
       return send(res, 200, page, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     } catch {
       return send(res, 200, info);
