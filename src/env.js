@@ -13,13 +13,24 @@ import { fileURLToPath } from 'node:url';
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const APP = {
-  brand: 'NIGHTLINE',
-  tag: 'Railway',
+  brand: process.env.APP_BRAND || 'Console',
+  tag: 'Cloud',
   version: '1.0.5',
-  edition: 'RAILWAY',
-  repo: 'https://github.com/youdidking/NightLine-Railway',
-  telegram: process.env.NL_TELEGRAM_CONTACT || 'https://t.me/rvivl',
+  edition: 'CLOUD',
+  repo: '',
+  telegram: process.env.NL_TELEGRAM_CONTACT || '',
 };
+
+export const ADMIN_SECRET_PATH = (process.env.ADMIN_SECRET_PATH || '').replace(/^\/+|\/+$/g, '');
+export const PORTAL_SECRET_PATH = (process.env.PORTAL_SECRET_PATH || '').replace(/^\/+|\/+$/g, '');
+export const SUB_SECRET_PATH = (process.env.SUB_SECRET_PATH || '').replace(/^\/+|\/+$/g, '');
+export const TRANSPORT_PATH_PREFIX = (process.env.TRANSPORT_PATH_PREFIX || '/api/v2/stream').replace(/\/+$/, '');
+export const DECOY_UPSTREAM_URL = (process.env.DECOY_UPSTREAM_URL || '').trim();
+export const ENABLE_RAW_HTTP_PROXY = process.env.ENABLE_RAW_HTTP_PROXY === 'true';
+export const ENABLE_SOCKS5 = process.env.ENABLE_SOCKS5 === 'true';
+export const ENABLE_MTPROTO = process.env.ENABLE_MTPROTO === 'true';
+export const VERBOSE_STARTUP_LOGS = process.env.VERBOSE_STARTUP_LOGS === 'true';
+export const SESSION_COOKIE_NAME = (process.env.SESSION_COOKIE_NAME || 'sid').trim();
 
 /**
  * Data directory — always the volume.

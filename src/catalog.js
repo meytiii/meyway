@@ -19,6 +19,7 @@
  *                  but the panel marks it unusable on this host.
  */
 import { uid } from './store.js';
+import { TRANSPORT_PATH_PREFIX } from './env.js';
 
 export const CORES = {
   xray: {
@@ -435,7 +436,7 @@ function makeInbound(preset, overrides = {}) {
     presetId: preset.id,
     label: overrides.label || preset.title.en,
     enabled: overrides.enabled !== false,
-    routeKey: `nl-${id}`,
+    routeKey: `s-${id}`,
     port: overrides.port || 0,
     params: { ...preset.defaults, ...(overrides.params || {}) },
   };
@@ -444,8 +445,8 @@ function makeInbound(preset, overrides = {}) {
 /** Default inbounds seeded on a fresh install. */
 export function DEFAULT_INBOUNDS() {
   const list = [
-    makeInbound(presetById('vless-ws'), { label: 'VLESS · WS', enabled: false, port: 11001 }),
-    makeInbound(presetById('vless-xhttp'), { label: 'VLESS · XHTTP', enabled: false, port: 11003 }),
+    makeInbound(presetById('vless-ws'), { label: 'VLESS · WS', enabled: true, port: 11001 }),
+    makeInbound(presetById('vless-xhttp'), { label: 'VLESS · XHTTP', enabled: true, port: 11003 }),
     makeInbound(presetById('vless-grpc'), { label: 'VLESS · gRPC', enabled: false, port: 11004 }),
     makeInbound(presetById('trojan-ws'), { label: 'Trojan · WS', enabled: false, port: 11005 }),
     makeInbound(presetById('trojan-tcp-tls'), { label: 'Trojan · TLS', enabled: false, port: 11006 }),
@@ -477,21 +478,21 @@ export function describeInbound(inbound) {
 
 /**
  * The full HTTP path an edge-routed inbound answers on.
- *
- * The panel reverse-proxies by the `/<routeKey>` prefix (that is how a single
- * Railway HTTPS port can host many inbounds on two different cores), so the
- * value the core expects *must* include the route key.
  */
 export function edgePath(inbound) {
+  const prefix = (TRANSPORT_PATH_PREFIX || '/api/v2/stream').replace(/\/+$/, '');
+  const rk = (inbound.routeKey || `s-${inbound.id}`).replace(/^nl-/, 's-');
   const raw = (inbound.params && inbound.params.path) || '/';
   const suffix = raw === '/' ? '' : raw.startsWith('/') ? raw : `/${raw}`;
-  return `/${inbound.routeKey}${suffix}`;
+  return `${prefix}/${rk}${suffix}`;
 }
 
 /** gRPC service name including the routing prefix. */
 export function edgeServiceName(inbound) {
+  const prefix = (TRANSPORT_PATH_PREFIX || '/api/v2/stream').replace(/^\/+|\/+$/g, '');
+  const rk = (inbound.routeKey || `s-${inbound.id}`).replace(/^nl-/, 's-');
   const extra = ((inbound.params && inbound.params.serviceName) || '').replace(/^\/+/, '');
-  return extra ? `${inbound.routeKey}/${extra}` : inbound.routeKey;
+  return extra ? `${prefix}/${rk}/${extra}` : `${prefix}/${rk}`;
 }
 
 export function enabledInbounds(doc) {

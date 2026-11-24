@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>NIGHTLINE · اشتراک شما</title>
+<title>Subscription Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141210'/%3E%3Cpath d='M8 23V9h3l6 8.4V9h3v14h-3l-6-8.4V23z' fill='%23e9e5da'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/style.css?v=1.0.5">
-<link rel="stylesheet" href="/extra.css?v=1.0.5">
+<link rel="stylesheet" href="./style.css?v=1.0.5">
+<link rel="stylesheet" href="./extra.css?v=1.0.5">
 <style>
   /* long subscription links must wrap inside the column, never stretch the page */
   .user-links,.link-row{max-width:100%;min-width:0}
@@ -20,6 +20,18 @@
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
+
+<!-- Embedded essential vector sprites -->
+<svg xmlns="http://www.w3.org/2000/svg" hidden aria-hidden="true">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+</svg>
+
 <div class="wrap">
   <header class="masthead">
     <div class="topline">
@@ -31,7 +43,7 @@
         <button class="sw t-pick" data-th="dark" type="button">DARK</button>
       </div>
     </div>
-    <h1 class="mast-title">NIGHTLINE <span class="rail-tag">Railway</span></h1>
+    <h1 class="mast-title">Subscriber <span class="rail-tag">Portal</span></h1>
     <div class="subline">
       <span class="fa">صفحهٔ اختصاصی اشتراک شما — لینک‌ها، حجم و QR</span>
       <span class="en">Your private subscription page — links, quota and QR</span>
@@ -53,12 +65,13 @@
   </div>
 
   <footer class="colophon" style="margin-top:22px">
-    <span class="mono">NIGHTLINE · RAILWAY EDITION</span>
+    <span class="mono">SUBSCRIBER PORTAL</span>
   </footer>
 </div>
-<script src="/js/qrcode.js?v=1.0.5"></script>
+<script src="./js/qrcode.js?v=1.0.5"></script>
 <script type="module">
-const token = location.pathname.split('/').filter(Boolean)[1] || '';
+const token = location.pathname.split('/').filter(Boolean).pop() || '';
+const subBase = (window.__SUB_BASE_PATH || '/sub').replace(/\/+$/, '');
 const state = { data: null };
 
 const $ = (s) => document.querySelector(s);
@@ -97,9 +110,15 @@ function qr(text) {
   } catch { return ''; }
 }
 
+function getSubUrl() {
+  if (state.data && state.data.subUrl) return state.data.subUrl;
+  return `${location.origin}${subBase}/${token}`;
+}
+
 function render() {
   const d = state.data;
   const percent = d.quotaGb ? Math.min(100, Math.round((d.usageGb / d.quotaGb) * 100)) : 0;
+  const subUrl = getSubUrl();
   $('#content').innerHTML = `
     <div class="cols">
       <div class="card">
@@ -118,17 +137,17 @@ function render() {
         </table>
         ${d.quotaGb ? `<div class="meter" style="margin-top:10px"><i style="width:${percent}%"></i></div>` : ''}
         <div class="actions">
-          <a class="btn primary sm-btn" href="/sub/${esc(token)}" target="_blank" rel="noopener">${icon('download', 'ic ic-sm')}${t('افزودن به کلاینت', 'IMPORT SUBSCRIPTION')}</a>
+          <a class="btn primary sm-btn" href="${esc(subUrl)}" target="_blank" rel="noopener">${icon('download', 'ic ic-sm')}${t('افزودن به کلاینت', 'IMPORT SUBSCRIPTION')}</a>
           <button class="btn ghost sm-btn" id="copy-sub" type="button">${icon('copy', 'ic ic-sm')}${t('کپی آدرس', 'COPY URL')}</button>
         </div>
-        <p class="hint">${t('آدرس اشتراک را در v2rayNG، Hiddify، sing-box یا Clash اضافه کنید و از منوی خود کلاینت تازه‌سازی کنید.', 'Add the subscription URL in v2rayNG, Hiddify, sing-box or Clash and refresh from the client menu.')}</p>
+        <p class="hint">${t('آدرس اشتراک را در کلاینت خود اضافه کنید و به‌روزرسانی نمایید.', 'Add the subscription URL in your client and update.')}</p>
       </div>
 
       <div class="card card-subtle">
         <p class="kicker">${icon('qr')}${t('اسکن سریع', 'SCAN TO IMPORT')}</p>
         <div class="qr-center">
-          ${qr(location.origin + '/sub/' + token)}
-          <p class="code-line" style="margin-top:8px;font-size:10px;max-width:100%;overflow-wrap:anywhere">${esc(location.origin + '/sub/' + token)}</p>
+          ${qr(subUrl)}
+          <p class="code-line" style="margin-top:8px;font-size:10px;max-width:100%;overflow-wrap:anywhere">${esc(subUrl)}</p>
         </div>
       </div>
     </div>
@@ -138,7 +157,7 @@ function render() {
       <div class="stack-sm">
         ${d.links.map((l) => `
           <div class="link-row">
-            <span class="lk-name">${esc(l.protocol.toUpperCase())} · ${esc(l.transport)} · ${esc(l.core)}</span>
+            <span class="lk-name">${esc(l.protocol.toUpperCase())} &middot; ${esc(l.transport)}</span>
             <span class="lk-uri">${esc(l.uri)}</span>
             <button class="mini" data-copy="${esc(l.uri)}" type="button">${icon('copy', 'ic ic-sm')}</button>
             <button class="mini" data-qr="${esc(l.uri)}" type="button">${icon('qr', 'ic ic-sm')}</button>
@@ -162,7 +181,7 @@ document.addEventListener('click', (e) => {
     $('#qr-card').scrollIntoView({ behavior: 'smooth' });
     return;
   }
-  if (e.target.closest('#copy-sub')) navigator.clipboard?.writeText(location.origin + '/sub/' + token);
+  if (e.target.closest('#copy-sub')) navigator.clipboard?.writeText(getSubUrl());
 });
 
 setTheme(localStorage.getItem('nl-theme') || 'dark');
@@ -170,16 +189,7 @@ setLang(localStorage.getItem('nl-lang') || 'fa');
 $('#lang').addEventListener('click', () => setLang(document.documentElement.dataset.lang === 'fa' ? 'en' : 'fa'));
 document.querySelectorAll('.t-pick').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.th)));
 
-async function injectSprite() {
-  try {
-    const res = await fetch('/sprite.svg');
-    const text = await res.text();
-    document.body.insertAdjacentHTML('afterbegin', text.replace('<svg ', '<svg hidden aria-hidden="true" '));
-  } catch { /* icons degrade to nothing */ }
-}
-
-await injectSprite();
-fetch(`/u/${token}?json=1`).then((r) => r.json()).then((data) => {
+fetch(location.pathname + '?json=1').then((r) => r.json()).then((data) => {
   if (data.error) throw new Error(data.error);
   state.data = data;
   render();

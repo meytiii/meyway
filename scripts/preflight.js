@@ -18,7 +18,13 @@ const notes = [];
 function checkBinary(name, args) {
   const file = BIN[name];
   if (!fs.existsSync(file)) {
-    problems.push(`${name} binary missing at ${file} — run scripts/install-binaries.mjs or build with Docker`);
+    const isLocalDev = Boolean(process.env.NL_ALLOW_EPHEMERAL || process.platform === 'win32' || !process.env.RAILWAY_ENVIRONMENT_ID);
+    const msg = `${name} binary not found at ${file} (expected in Docker or after install-binaries)`;
+    if (isLocalDev) {
+      notes.push(msg);
+    } else {
+      problems.push(msg);
+    }
     return;
   }
   const res = spawnSync(file, args, { encoding: 'utf8', timeout: 10000 });

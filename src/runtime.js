@@ -12,7 +12,7 @@ import { buildXrayConfig, XRAY_API_PORT } from './config/xray.js';
 import { buildSingboxConfig } from './config/singbox.js';
 import { ensureCerts, ensureReality } from './config/certs.js';
 import { TrafficAccountant, queryStats, sysStats } from './stats.js';
-import { describeInbound } from './catalog.js';
+import { describeInbound, edgePath } from './catalog.js';
 import { coreReason } from './text.js';
 import {
   get as getDoc,
@@ -22,7 +22,7 @@ import {
   event,
   normalizeUser,
 } from './store.js';
-import { RAILWAY, MUX_PORT, PORT, LIMITS } from './env.js';
+import { RAILWAY, MUX_PORT, PORT, LIMITS, ENABLE_MTPROTO } from './env.js';
 
 /**
  * Last-resort safety net: a rule that references geo data the core cannot load
@@ -91,7 +91,7 @@ export class Runtime extends EventEmitter {
   facts() {
     const doc = getDoc();
     return {
-      publicHost: (doc.settings.publicHost || RAILWAY.publicDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
+      publicHost: (doc.settings.publicHost || process.env.PUBLIC_HOST || RAILWAY.publicDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
       tcpHost: doc.settings.tcpHost || RAILWAY.tcpDomain || '',
       tcpPort: Number(doc.settings.tcpPort || RAILWAY.tcpPort || 0) || 0,
       internalMuxPort: MUX_PORT,
@@ -126,7 +126,9 @@ export class Runtime extends EventEmitter {
     for (const raw of doc.inbounds || []) {
       const ib = describeInbound(raw);
       if (!ib || !ib.enabled || ib.edge !== 'http' || ib.udp) continue;
-      routes.push({ prefix: `/${ib.routeKey}`, port: ib.port, inboundId: ib.id, core: ib.core });
+      routes.push({ prefix: edgePath(ib), port: ib.port, inboundId: ib.id, core: ib.core });
+      // Keep legacy path alias if needed for smooth transition
+      if (ib.routeKey) routes.push({ prefix: `/${ib.routeKey}`, port: ib.port, inboundId: ib.id, core: ib.core });
     }
     return routes;
   }
@@ -280,7 +282,7 @@ export class Runtime extends EventEmitter {
     }
 
     const tg = doc.settings.telegram.mtproto;
-    if (tg.enabled) {
+    if (tg.enabled && ENABLE_MTPROTO) {
       if (!tg.secret) {
         setDoc((d) => {
           d.settings.telegram.mtproto.secret = generateSecret(d.settings.telegram.mtproto.faketlsHost);

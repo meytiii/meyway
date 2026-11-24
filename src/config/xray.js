@@ -63,7 +63,7 @@ function streamSettings(ib, ctx) {
   } else if (sec === 'tls-self') {
     stream.security = 'tls';
     stream.tlsSettings = {
-      serverName: params.sni || 'nightline.railway',
+      serverName: params.sni || 'localhost',
       alpn: params.alpn ? String(params.alpn).split(',') : undefined,
       certificates:
         ctx.certs.certificateFile && ctx.certs.keyFile

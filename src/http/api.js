@@ -26,6 +26,8 @@ import {
   isQuotaExhausted,
   event,
   subscribe,
+  getSubSecretPath,
+  getPortalSecretPath,
 } from '../store.js';
 import { PRESETS, describeInbound, presetById, FIELD_MAP } from '../catalog.js';
 import { buildUserLinks } from '../links.js';
@@ -182,8 +184,8 @@ export function buildState(runtime, req) {
       lastSeen: user.lastSeen,
       links,
       subToken: subToken(doc.secrets.server, user.id),
-      subUrl: subBase ? `${subBase}/sub/${subToken(doc.secrets.server, user.id)}` : '',
-      portalUrl: subBase ? `${subBase}/u/${subToken(doc.secrets.server, user.id)}` : '',
+      subUrl: subBase ? `${subBase}/${getSubSecretPath()}/${subToken(doc.secrets.server, user.id)}` : '',
+      portalUrl: subBase ? `${subBase}/${getPortalSecretPath()}/${subToken(doc.secrets.server, user.id)}` : '',
     };
   });
 
@@ -327,7 +329,7 @@ export async function handleApi(ctx) {
 
   /* subscriptions & public portal (no session required) */
   if (path.startsWith('/sub/') || path.startsWith('/u/')) {
-    return handleSubscription({ req, res, url, runtime });
+    return handleSubscription(ctx);
   }
 
   const route = `${req.method} ${path}`;
@@ -347,7 +349,7 @@ export async function handleApi(ctx) {
     setDoc((d) => {
       d.admin = { username, salt: record.salt, hash: record.hash, algo: record.algo, updatedAt: Date.now() };
     });
-    issueSession(res, doc.secrets.server, username);
+    issueSession(res, doc.secrets.server, username, req);
     event('auth', `admin account created (${username})`);
     return send(res, 200, { ok: true, ...buildBootstrap(runtime, req) });
   }
@@ -362,12 +364,12 @@ export async function handleApi(ctx) {
     const okPass = verifyPassword(String(body.password || ''), doc.admin);
     if (!okUser || !okPass) return send(res, 401, { error: 'invalid credentials' });
     clearThrottle(`login:${ip}`);
-    issueSession(res, doc.secrets.server, doc.admin.username);
+    issueSession(res, doc.secrets.server, doc.admin.username, req);
     return send(res, 200, { ok: true });
   }
 
   if (route === 'POST /api/logout') {
-    clearSession(res);
+    clearSession(res, req);
     return send(res, 200, { ok: true });
   }
 
@@ -822,7 +824,7 @@ export async function handleApi(ctx) {
     return send(res, 200, result);
   }
 
-  return send(res, 404, { error: 'not found', route });
+  return send(res, 404, { error: 'not found' });
 }
 
 function probeTcp(host, port) {
@@ -841,14 +843,22 @@ function probeTcp(host, port) {
 
 /* ── subscriptions ───────────────────────────────────────────────────── */
 
-function handleSubscription({ req, res, url, runtime }) {
+function handleSubscription({ req, res, url, runtime, onInvalid, portalBasePath, subBasePath }) {
   const parts = url.pathname.split('/').filter(Boolean);
   const kind = parts[0];
   const token = parts[1] || '';
   const format = (parts[2] || url.searchParams.get('format') || 'base64').toLowerCase();
   const doc = runtime.withRuntime(getDoc());
   const user = (doc.users || []).find((u) => subToken(doc.secrets.server, u.id) === token);
-  if (!user) return send(res, 404, { error: 'not found' });
+  if (!user) {
+    if (onInvalid) return onInvalid();
+    return send(res, 404, { error: 'not found' });
+  }
+
+  const panelHost = runtime.facts().publicHost || (req?.headers?.host || '');
+  const subBase = panelHost ? `https://${panelHost}` : '';
+  const activeSubPath = subBasePath || `/${getSubSecretPath()}`;
+  const activePortalPath = portalBasePath || `/${getPortalSecretPath()}`;
 
   if (kind === 'u') {
     const info = {
@@ -857,6 +867,7 @@ function handleSubscription({ req, res, url, runtime }) {
       usageGb: bytesToGb(userTotal(user)),
       quotaGb: bytesToGb(user.quotaBytes),
       expiresAt: user.expiresAt,
+      subUrl: subBase ? `${subBase}${activeSubPath}/${token}` : `${activeSubPath}/${token}`,
       links: buildUserLinks(doc, user).map((l) => ({
         label: l.label,
         uri: l.uri,
@@ -868,14 +879,19 @@ function handleSubscription({ req, res, url, runtime }) {
     };
     if (url.searchParams.get('json') === '1') return send(res, 200, info);
     try {
-      const page = readFileSync(new URL('../../public/portal.html', import.meta.url));
+      let page = readFileSync(new URL('../../public/portal.html', import.meta.url), 'utf8');
+      const injection = `<script>window.__PORTAL_BASE_PATH="${activePortalPath}";window.__SUB_BASE_PATH="${activeSubPath}";</script>`;
+      page = page.includes('</head>') ? page.replace('</head>', `${injection}</head>`) : `${injection}${page}`;
       return send(res, 200, page, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     } catch {
       return send(res, 200, info);
     }
   }
 
-  if (!FORMATS.has(format)) return send(res, 400, { error: 'unknown format' });
+  if (!FORMATS.has(format)) {
+    if (onInvalid) return onInvalid();
+    return send(res, 400, { error: 'unknown format' });
+  }
   const sub = buildSub(doc, user, format);
   const headers = {
     'Content-Type': sub.type,
@@ -884,7 +900,7 @@ function handleSubscription({ req, res, url, runtime }) {
     ...headerSet(doc.settings.brand || APP.brand),
   };
   if (url.searchParams.get('download') === '1') {
-    headers['Content-Disposition'] = `attachment; filename="nightline-${user.name}.${format === 'clash' ? 'yaml' : format === 'links' ? 'txt' : 'json'}"`;
+    headers['Content-Disposition'] = `attachment; filename="config-${user.name}.${format === 'clash' ? 'yaml' : format === 'links' ? 'txt' : 'json'}"`;
   }
   return send(res, 200, sub.body, headers);
 }

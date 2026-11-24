@@ -1,11 +1,5 @@
 # ============================================================================
-# NIGHTLINE · Railway Edition
-# One container: panel + Xray-core + sing-box + mtg (MTProto proxy)
-#
-# NOTE ON THE BASE IMAGE
-# sing-box ships glibc-linked Linux binaries (NEEDED: libc.so.6, libpthread,
-# libdl). On Alpine/musl those fail with `not found` (exit 127), so the base
-# image is Debian slim (glibc). xray and mtg are static and run anywhere.
+# Edge Service Container
 # ============================================================================
 FROM node:22-bookworm-slim
 
@@ -134,8 +128,8 @@ RUN mkdir -p /data
 EXPOSE 8080
 EXPOSE 8443
 
-# The panel may answer on several ports (see PANEL_PORTS in src/env.js); try them all.
+# Service healthcheck
 HEALTHCHECK --interval=45s --timeout=8s --start-period=40s --retries=4 \
-  CMD node -e "const ps=[process.env.NL_PANEL_PORT,process.env.PORT,8080,3000].filter(Boolean).map(Number);(async()=>{for(const p of ps){try{const r=await fetch('http://127.0.0.1:'+p+'/health');if(r.ok)process.exit(0)}catch{}}process.exit(1)})()"
+  CMD node -e "const ps=[process.env.NL_PANEL_PORT,process.env.PORT,8080,3000].filter(Boolean).map(Number);(async()=>{for(const p of ps){try{const r=await fetch('http://127.0.0.1:'+p+'/status');if(r.ok)process.exit(0)}catch{}}process.exit(1)})()"
 
 CMD ["node", "src/boot.js"]

@@ -81,8 +81,11 @@ function toast(message, kind = 'ok') {
   toast._t = setTimeout(() => { el.hidden = true; }, 3200);
 }
 
+const BASE_PATH = (typeof window !== 'undefined' && window.__ADMIN_BASE_PATH ? window.__ADMIN_BASE_PATH : '').replace(/\/+$/, '');
+
 async function api(path, { method = 'GET', body } = {}) {
-  const res = await fetch(path, {
+  const targetPath = path.startsWith('/api/') ? `${BASE_PATH}${path}` : path;
+  const res = await fetch(targetPath, {
     method,
     headers: body ? { 'content-type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
@@ -989,7 +992,7 @@ function renderDelivery() {
         <div class="client-os-grid">
           ${CLIENTS.map((c) => `
             <a class="client-link" href="${c.url}" target="_blank" rel="noopener">
-              <img class="client-logo" src="/assets/${c.file}" alt="${c.name}">
+              <img class="client-logo" src="${BASE_PATH}/assets/${c.file}" alt="${c.name}">
               <span>${c.name}<br><small class="muted" style="font-size:9.5px">${c.os}</small></span>
               ${icon('external', 'ic ic-sm')}
             </a>`).join('')}
@@ -1208,7 +1211,7 @@ function renderCores() {
         <div class="console" id="log-console" style="margin-top:10px">…</div>
         <div class="actions">
           <button class="btn sm-btn ghost" data-act="refresh-logs" type="button">${icon('refresh', 'ic ic-sm')}${t('تازه‌سازی', 'REFRESH')}</button>
-          <a class="btn sm-btn ghost" href="/api/logs?source=${S.logSource}" target="_blank" rel="noopener">${icon('external', 'ic ic-sm')}${t('خام', 'RAW')}</a>
+          <a class="btn sm-btn ghost" href="${BASE_PATH}/api/logs?source=${S.logSource}" target="_blank" rel="noopener">${icon('external', 'ic ic-sm')}${t('خام', 'RAW')}</a>
         </div>
       </div>
 
@@ -1492,7 +1495,7 @@ function renderSettings() {
         <p class="kicker">${icon('download')}${t('پشتیبان‌گیری', 'BACKUP & RESTORE')}</p>
         <p class="labor">${t('تمام کاربران، اینباندها و کلیدها در یک فایل JSON هستند. قبل از هر ارتقا یک نسخه بگیرید.', 'Users, inbounds and keys live in one JSON file. Take a copy before every upgrade.')}</p>
         <div class="actions">
-          <a class="btn sm-btn" href="/api/backup" download>${icon('download', 'ic ic-sm')}${t('دریافت پشتیبان', 'DOWNLOAD BACKUP')}</a>
+          <a class="btn sm-btn" href="${BASE_PATH}/api/backup" download>${icon('download', 'ic ic-sm')}${t('دریافت پشتیبان', 'DOWNLOAD BACKUP')}</a>
           <label class="btn sm-btn ghost" style="cursor:pointer">
             ${icon('upload', 'ic ic-sm')}${t('بازیابی', 'RESTORE')}
             <input type="file" id="restore-file" accept="application/json" hidden>

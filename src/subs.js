@@ -7,21 +7,19 @@ import { buildUserLinks } from './links.js';
 import { certPin } from './config/certs.js';
 import { userTotal } from './store.js';
 
-export const REPO_URL = 'https://github.com/youdidking/NightLine-Railway';
-const REPO_URL_INLINE = REPO_URL;
+export const REPO_URL = '';
 
 const SUB_HEADERS = {
-  'profile-title': 'NIGHTLINE · FREE',
+  'profile-title': 'Subscription',
   'profile-update-interval': '12',
-  'profile-web-page-url': REPO_URL_INLINE,
 };
 
-export function headerSet(brand = 'NIGHTLINE') {
-  return { ...SUB_HEADERS, 'profile-title': `${brand} · FREE` };
+export function headerSet(brand = 'Subscription') {
+  return { ...SUB_HEADERS, 'profile-title': brand };
 }
 
-export const FREE_LINE = 'FREE & NOT FOR SALE — selling this service is prohibited';
-export const FREE_LINE_FA = 'رایگان است — فروش این سرویس ممنوع';
+export const FREE_LINE = '';
+export const FREE_LINE_FA = '';
 
 /** Days left before the account expires (null when it never expires). */
 export function daysLeft(user) {
@@ -51,12 +49,9 @@ export function infoLine(doc, user) {
   const days = u.days === null ? 'never' : `${u.days} day(s) left`;
   const exp = u.expires || 'never';
   return [
-    `# NIGHTLINE · Railway · ${user.name}`,
+    `# Profile · ${user.name}`,
     `# credits ${quota} · remaining ${left}`,
     `# valid until ${exp} · ${days}`,
-    `# ${FREE_LINE}`,
-    `# ${FREE_LINE_FA}`,
-    `# source ${REPO_URL}`,
   ].join('\n');
 }
 

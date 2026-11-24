@@ -6,7 +6,7 @@
   },
   "deploy": {
     "startCommand": "node src/boot.js",
-    "healthcheckPath": "/health",
+    "healthcheckPath": "/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 10,

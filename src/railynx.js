@@ -33,7 +33,7 @@ export const DEFAULTS = {
 
 const VLESS_DEST_HOST = 'www.google.com';
 const VLESS_DEST_PORT = 80;
-const PROBE_REQUEST = `GET /generate_204 HTTP/1.1\r\nHost: ${VLESS_DEST_HOST}\r\nUser-Agent: v2rayN\r\nConnection: close\r\n\r\n`;
+const PROBE_REQUEST = `GET /generate_204 HTTP/1.1\r\nHost: ${VLESS_DEST_HOST}\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nConnection: close\r\n\r\n`;
 
 /* ── link parsing ─────────────────────────────────────────────────────── */
 
@@ -70,7 +70,7 @@ export function parseVlessLink(raw) {
     path: q.get('path') || '/',
     security,
     type,
-    name: decodeURIComponent((url.hash || '').replace(/^#/, '')) || 'Railynx',
+    name: decodeURIComponent((url.hash || '').replace(/^#/, '')) || 'Node',
   };
 }
 

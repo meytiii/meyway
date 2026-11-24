@@ -1,12 +1,9 @@
 /**
- * The panel's single HTTP entry point.
+ * Stealth HTTP Server for Railway Single-Port Deployment.
  *
- *   /            → panel UI
- *   /api/*       → JSON API
- *   /sub/:token  → subscription (all formats)
- *   /u/:token    → self-service page for a subscriber
- *   /nl-xxxx/*   → reverse-proxied into the Xray / sing-box inbound that owns
- *                  that path (WS, HTTPUpgrade, XHTTP, gRPC)
+ * Exposes a clean decoy website at root (or reverse-proxies upstream),
+ * gates all admin, portal, and subscription features behind randomized/env-set secret paths,
+ * multiplexes edge transport routes, and returns decoy 404 for all probes.
  */
 import http from 'node:http';
 import net from 'node:net';
@@ -15,11 +12,14 @@ import zlib from 'node:zlib';
 import path from 'node:path';
 import { ROOT } from '../env.js';
 import { handleApi } from './api.js';
+import { serveDecoy, serveDecoy404 } from './decoy.js';
+import { getAdminSecretPath, getPortalSecretPath, getSubSecretPath } from '../store.js';
 
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
@@ -32,15 +32,27 @@ const MIME = {
   '.webmanifest': 'application/manifest+json',
 };
 
-/* Small in-process cache: the panel's assets change only on redeploy. */
 const STATIC_CACHE = new Map();
 
-function staticEntry(file) {
+function staticEntry(file, injectScript = '') {
   const stat = fs.statSync(file);
-  const hit = STATIC_CACHE.get(file);
+  const cacheKey = `${file}:${injectScript ? 'injected:' + injectScript : 'raw'}`;
+  const hit = STATIC_CACHE.get(cacheKey);
   if (hit && hit.mtime === stat.mtimeMs) return hit;
-  const raw = fs.readFileSync(file);
+
+  let raw = fs.readFileSync(file);
   const ext = path.extname(file).toLowerCase();
+
+  if (injectScript && ext === '.html') {
+    let str = raw.toString('utf8');
+    if (str.includes('</head>')) {
+      str = str.replace('</head>', `${injectScript}</head>`);
+    } else {
+      str = `${injectScript}${str}`;
+    }
+    raw = Buffer.from(str, 'utf8');
+  }
+
   const compressible = /^(text\/|application\/(json|javascript|xml))/.test(MIME[ext] || '');
   const entry = {
     mtime: stat.mtimeMs,
@@ -49,27 +61,28 @@ function staticEntry(file) {
     type: MIME[ext] || 'application/octet-stream',
     ext,
   };
-  STATIC_CACHE.set(file, entry);
+  STATIC_CACHE.set(cacheKey, entry);
   return entry;
 }
 
-function serveStatic(req, res, urlPath) {
-  const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
-  if (rel.includes('..')) {
-    res.writeHead(400).end('bad request');
+function serveGatedStatic(req, res, relPath, injectScript = '') {
+  const cleanRel = relPath.replace(/^\/+/, '').split('?')[0];
+  if (cleanRel.includes('..')) {
+    serveDecoy404(req, res);
     return true;
   }
-  const file = path.join(PUBLIC_DIR, rel);
-  if (!file.startsWith(PUBLIC_DIR) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return false;
-  const entry = staticEntry(file);
+  const file = path.join(PUBLIC_DIR, cleanRel);
+  if (!file.startsWith(PUBLIC_DIR) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+    serveDecoy404(req, res);
+    return true;
+  }
+
+  const entry = staticEntry(file, injectScript);
   const acceptsGzip = /\bgzip\b/.test(req.headers['accept-encoding'] || '');
   const body = acceptsGzip && entry.gzip ? entry.gzip : entry.raw;
   const headers = {
     'Content-Type': entry.type,
     'Content-Length': body.length,
-    // Only truly static binaries (images, fonts) may be cached for good. Code and
-    // markup must revalidate every load, otherwise a browser keeps running an old
-    // app.js after an in-panel update and half the UI looks "missing".
     'Cache-Control': ['.html', '.js', '.mjs', '.css', '.svg', '.json', '.webmanifest'].includes(entry.ext)
       ? 'no-cache'
       : 'public, max-age=604800',
@@ -90,25 +103,102 @@ function serveStatic(req, res, urlPath) {
 export function createPanelServer({ runtime, api }) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+    // Security header hygiene & remove signature headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
+    res.removeHeader('X-Powered-By');
 
-    if (url.pathname === '/health') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, at: Date.now() }));
+    // 1. Healthcheck & Decoy routes at root
+    if (url.pathname === '/' || url.pathname === '/favicon.ico' || url.pathname === '/robots.txt' || url.pathname === '/status') {
+      serveDecoy(req, res, url.pathname);
       return;
     }
 
-    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/sub/') || url.pathname.startsWith('/u/')) {
-      handleApi({ req, res, url, runtime, api }).catch((err) => {
+    const adminPath = getAdminSecretPath();
+    const portalPath = getPortalSecretPath();
+    const subPath = getSubSecretPath();
+
+    const adminPrefix = `/${adminPath}`;
+    const portalPrefix = `/${portalPath}`;
+    const subPrefix = `/${subPath}`;
+
+    // 2. Secret Gated Admin Panel & APIs
+    if (url.pathname === adminPrefix || url.pathname === `${adminPrefix}/` || url.pathname === `${adminPrefix}/index.html`) {
+      const injectScript = `<script>window.__ADMIN_BASE_PATH="${adminPrefix}";</script>`;
+      serveGatedStatic(req, res, 'index.html', injectScript);
+      return;
+    }
+
+    if (url.pathname.startsWith(`${adminPrefix}/api/`)) {
+      const subUrl = new URL(url.toString());
+      subUrl.pathname = url.pathname.slice(adminPrefix.length); // e.g. /api/...
+      handleApi({ req, res, url: subUrl, runtime, api, basePath: adminPrefix }).catch((err) => {
         console.error('[api]', err);
         if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'internal', message: err.message }));
+        res.end(JSON.stringify({ error: 'internal' }));
       });
       return;
     }
 
-    // Reverse proxy into the cores (path-routed inbounds).
+    if (url.pathname.startsWith(`${adminPrefix}/`)) {
+      const rel = url.pathname.slice(adminPrefix.length + 1);
+      serveGatedStatic(req, res, rel);
+      return;
+    }
+
+    // 3. Secret Gated Subscriber Portal
+    if (url.pathname === portalPrefix || url.pathname === `${portalPrefix}/`) {
+      serveDecoy404(req, res);
+      return;
+    }
+
+    if (url.pathname.startsWith(`${portalPrefix}/`)) {
+      const remainder = url.pathname.slice(portalPrefix.length + 1);
+      const parts = remainder.split('/');
+      const token = parts[0];
+
+      // Handle asset requests under portal prefix (e.g. /portal-xxx/style.css)
+      if (['style.css', 'extra.css', 'js/qrcode.js', 'sprite.svg', 'fonts', 'assets'].some((p) => remainder.startsWith(p))) {
+        serveGatedStatic(req, res, remainder);
+        return;
+      }
+
+      if (token && parts.length === 1) {
+        // Forward to API router to validate token and serve portal UI or JSON
+        const portalUrl = new URL(url.toString());
+        portalUrl.pathname = `/u/${token}`;
+        handleApi({
+          req,
+          res,
+          url: portalUrl,
+          runtime,
+          api,
+          portalBasePath: portalPrefix,
+          subBasePath: subPrefix,
+          onInvalid: () => serveDecoy404(req, res),
+        }).catch(() => serveDecoy404(req, res));
+        return;
+      }
+    }
+
+    // 4. Secret Gated Subscriptions
+    if (url.pathname.startsWith(`${subPrefix}/`)) {
+      const remainder = url.pathname.slice(subPrefix.length + 1);
+      const subUrl = new URL(url.toString());
+      subUrl.pathname = `/sub/${remainder}`;
+      handleApi({
+        req,
+        res,
+        url: subUrl,
+        runtime,
+        api,
+        onInvalid: () => serveDecoy404(req, res),
+      }).catch(() => serveDecoy404(req, res));
+      return;
+    }
+
+    // 5. Camouflaged Inbound Proxy Transports (WS / HTTPUpgrade / gRPC / XHTTP)
     for (const route of api.httpRoutes()) {
       if (url.pathname === route.prefix || url.pathname.startsWith(`${route.prefix}/`)) {
         proxyHttp(req, res, route.port);
@@ -116,9 +206,8 @@ export function createPanelServer({ runtime, api }) {
       }
     }
 
-    if (serveStatic(req, res, url.pathname)) return;
-    if (serveStatic(req, res, '/index.html')) return;
-    res.writeHead(404).end('not found');
+    // 6. Unknown route fallback: Decoy 404 for all probes
+    serveDecoy404(req, res);
   });
 
   server.on('upgrade', (req, socket, head) => {
@@ -142,13 +231,17 @@ function proxyHttp(req, res, port) {
   const proxyReq = http.request(
     { host: '127.0.0.1', port, method: req.method, path: req.url, headers },
     (proxyRes) => {
-      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      // If the backend returns an error on a non-tunnel HTTP probe, fall back to decoy 404
+      if (proxyRes.statusCode >= 400) {
+        proxyRes.resume();
+        return serveDecoy404(req, res);
+      }
+      res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
       proxyRes.pipe(res);
     },
   );
   proxyReq.on('error', () => {
-    if (!res.headersSent) res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end('bad gateway');
+    if (!res.headersSent) serveDecoy404(req, res);
   });
   req.pipe(proxyReq);
 }

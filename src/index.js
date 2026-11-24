@@ -1,7 +1,7 @@
 /**
  * NIGHTLINE · Railway Edition — entry point.
  */
-import { ensureDirs, PORT, PANEL_PORTS, PORT_CONFLICT, MUX_PORT, DATA_DIR, BIN, APP, IS_RAILWAY, RAILWAY } from './env.js';
+import { ensureDirs, PORT, PANEL_PORTS, PORT_CONFLICT, MUX_PORT, DATA_DIR, BIN, APP, IS_RAILWAY, RAILWAY, VERBOSE_STARTUP_LOGS } from './env.js';
 import { auditEnvironment, requirementBanner } from './guard.js';
 import { load, get } from './store.js';
 import { Runtime } from './runtime.js';
@@ -30,45 +30,16 @@ const servers = [];
 const boundPanelPorts = [];
 
 function banner() {
-  const doc = get();
+  if (!VERBOSE_STARTUP_LOGS) {
+    console.log(`[server] service listening on :${boundPanelPorts.join(', ') || PORT}`);
+    return;
+  }
   const facts = runtime.facts();
   const lines = [
-    '',
-    '  ███ NIGHTLINE · Railway',
-    `  version ${APP.version} · ${new Date().toISOString()}`,
-    `  panel port        : ${boundPanelPorts.join(', ') || PORT}`,
-    `  tcp mux port      : ${MUX_PORT}`,
-    `  data directory    : ${DATA_DIR}${guard.info.volumeAttached ? ' (volume attached)' : ''}`,
-    `  volume path       : ${RAILWAY.volumePath || DATA_DIR}`,
-    `  public host       : ${facts.publicHost || '(not detected yet)'}`,
-    `  tcp proxy         : ${facts.tcpHost ? `${facts.tcpHost}:${facts.tcpPort}` : '(not enabled)'}`,
-    `  railway           : ${IS_RAILWAY ? `${RAILWAY.projectName || '-'} / ${RAILWAY.serviceName || '-'}` : 'local run'}`,
-    `  xray binary       : ${BIN.xray}`,
-    `  sing-box binary   : ${BIN.singbox}`,
-    `  mtg binary        : ${BIN.mtg}`,
-    `  setup required    : ${doc.admin ? 'no' : 'yes → open /setup'}`,
-    '',
-    '  Railway checklist',
-    `    public domain  → target port ${boundPanelPorts.includes(8080) ? '8080' : boundPanelPorts[0] || PORT}`,
-    `    TCP proxy      → target port ${MUX_PORT}`,
-    '',
+    `[server] service ready · port ${boundPanelPorts.join(', ') || PORT}`,
+    `[server] public domain : ${facts.publicHost || '(none)'}`,
   ];
   console.log(lines.join('\n'));
-
-  if (PORT_CONFLICT) {
-    console.log([
-      '  ┌─ PORT CONFLICT ────────────────────────────────────────────────',
-      `  │ PORT=${PORT} and NL_TCP_PORT=${MUX_PORT} are the same port.`,
-      `  │ The TCP multiplexer keeps :${MUX_PORT} (that is what your Railway`,
-      '  │ TCP proxy targets), so the panel is served on:',
-      `  │     ${boundPanelPorts.join(', ') || '(none)'}`,
-      '  │ Fix it properly with any one of these:',
-      `  │   1. set PORT=8080 (panel) and keep the TCP proxy on ${MUX_PORT}`,
-      '  │   2. point your Railway domain target at the panel port above',
-      '  └────────────────────────────────────────────────────────────────',
-      '',
-    ].join('\n'));
-  }
 }
 
 // Listen on every candidate panel port; the first success is enough to boot.
@@ -82,15 +53,14 @@ function onListening(port) {
 }
 
 if (!PANEL_PORTS.length) {
-  console.error('[panel] no usable panel port (PORT / NL_PANEL_PORT collided with NL_TCP_PORT)');
+  console.error('[server] no usable panel port');
 }
 
 for (const port of PANEL_PORTS) {
   const srv = createPanelServer({ runtime, api });
-  srv.on('error', (err) => console.error(`[panel] :${port} — ${err.message}`));
+  srv.on('error', (err) => { if (VERBOSE_STARTUP_LOGS) console.error(`[server] :${port} — ${err.message}`); });
   srv.listen(port, '0.0.0.0', () => {
     boundPanelPorts.push(port);
-    console.log(`[panel] listening on :${port}`);
     onListening(port);
   });
   servers.push(srv);
@@ -100,7 +70,7 @@ let shuttingDown = false;
 async function shutdown(signal) {
   if (shuttingDown) return;
   shuttingDown = true;
-  console.log(`\n[nightline] ${signal} received, shutting down…`);
+  console.log(`\n[server] ${signal} received, shutting down…`);
   for (const srv of servers) { try { srv.close(); } catch { /* ignore */ } }
   try { await runtime.shutdown(); } catch { /* ignore */ }
   setTimeout(() => process.exit(0), 300);

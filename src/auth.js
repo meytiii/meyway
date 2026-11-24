@@ -3,8 +3,9 @@
  * small brute-force brake.  No external dependencies.
  */
 import crypto from 'node:crypto';
+import { SESSION_COOKIE_NAME } from './env.js';
 
-const COOKIE = 'nl_session';
+const COOKIE = SESSION_COOKIE_NAME || 'sid';
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 7;
 
 export function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
@@ -41,14 +42,18 @@ export function verifyToken(token, secret) {
   }
 }
 
-export function issueSession(res, secret, username) {
+export function issueSession(res, secret, username, req = null) {
   const token = signToken({ u: username, iat: Date.now(), exp: Date.now() + SESSION_TTL }, secret);
-  res.setHeader('Set-Cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL / 1000)}`);
+  const isHttps = (req?.headers?.['x-forwarded-proto'] || '').toLowerCase() === 'https' || process.env.NODE_ENV === 'production';
+  const secureFlag = isHttps ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL / 1000)}${secureFlag}`);
   return token;
 }
 
-export function clearSession(res) {
-  res.setHeader('Set-Cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+export function clearSession(res, req = null) {
+  const isHttps = (req?.headers?.['x-forwarded-proto'] || '').toLowerCase() === 'https' || process.env.NODE_ENV === 'production';
+  const secureFlag = isHttps ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureFlag}`);
 }
 
 export function readSession(req, secret) {

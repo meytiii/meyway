@@ -14,6 +14,7 @@
  */
 import net from 'node:net';
 import { peekSni, classify, looksLikeMtproto } from './sni.js';
+import { ENABLE_RAW_HTTP_PROXY, ENABLE_SOCKS5, ENABLE_MTPROTO } from '../env.js';
 
 export class Mux {
   constructor({ socks5, httpProxy, resolvePlan, panelPort }) {
@@ -90,12 +91,20 @@ export class Mux {
   routeFirst(socket, chunk, plan) {
     const kind = classify(chunk);
     if (kind === 'socks5') {
+      if (!ENABLE_SOCKS5) {
+        socket.destroy();
+        return;
+      }
       this.stats.socks += 1;
       socket.resume();
       this.socks5.handle(socket, chunk);
       return;
     }
     if (kind === 'http-connect') {
+      if (!ENABLE_RAW_HTTP_PROXY) {
+        socket.destroy();
+        return;
+      }
       this.stats.http += 1;
       socket.resume();
       this.httpProxy.handle(socket, chunk);
@@ -115,7 +124,7 @@ export class Mux {
     // Plain (non-TLS) traffic: MTProto and Shadowsocks look equally random, so
     // MTProto's obfuscated2 tag decides, and everything else goes to the
     // Shadowsocks inbound when one is enabled on the shared port.
-    if (plan.mtprotoPort && looksLikeMtproto(chunk)) {
+    if (ENABLE_MTPROTO && plan.mtprotoPort && looksLikeMtproto(chunk)) {
       this.stats.mtproto += 1;
       this.pipeTo(socket, chunk, plan.mtprotoPort, 'mtproto');
       return;
@@ -126,7 +135,7 @@ export class Mux {
       this.pipeTo(socket, chunk, plan.opaquePort, 'core');
       return;
     }
-    if (plan.mtprotoPort) {
+    if (ENABLE_MTPROTO && plan.mtprotoPort) {
       this.stats.mtproto += 1;
       this.pipeTo(socket, chunk, plan.mtprotoPort, 'mtproto');
       return;
@@ -142,9 +151,9 @@ export class Mux {
       if (info && info.incomplete && buffer.length < 8192) return false;
       const sni = (info && info.sni) || '';
       let target = plan.sniMap[sni] || null;
-      if (!target && plan.mtprotoFakeTls && sni === plan.mtprotoFakeTls) target = { port: plan.mtprotoPort, kind: 'mtproto' };
+      if (!target && ENABLE_MTPROTO && plan.mtprotoFakeTls && sni === plan.mtprotoFakeTls) target = { port: plan.mtprotoPort, kind: 'mtproto' };
       if (!target && plan.defaultTls) target = plan.defaultTls;
-      if (!target && plan.mtprotoPort) target = { port: plan.mtprotoPort, kind: 'mtproto' };
+      if (!target && ENABLE_MTPROTO && plan.mtprotoPort) target = { port: plan.mtprotoPort, kind: 'mtproto' };
       if (!target) {
         socket.destroy();
         return true;

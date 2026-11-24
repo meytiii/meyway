@@ -25,7 +25,7 @@ if (pending) {
     console.error('[boot] keeping the installed version');
   }
 } else {
-  console.log(`[boot] v${APP.version} · data ${DATA_DIR}`);
+  if (process.env.VERBOSE_STARTUP_LOGS === 'true') console.log('[boot] service initialized');
 }
 
 const entry = path.join(ROOT, 'src', 'index.js');
@@ -39,7 +39,7 @@ for (const signal of ['SIGTERM', 'SIGINT']) {
 }
 
 child.on('exit', (code, signal) => {
-  console.log(`[boot] panel exited (code=${code}, signal=${signal || '-'})`);
+  if (process.env.VERBOSE_STARTUP_LOGS === 'true') console.log(`[boot] service stopped (code=${code}, signal=${signal || '-'})`);
   if (signal) {
     try { process.kill(process.pid, signal); } catch { process.exit(1); }
     return;

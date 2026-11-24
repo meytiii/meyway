@@ -31,7 +31,7 @@ function tlsBlock(ib, ctx) {
   if (ib.security === 'tls-self' || ib.transport === 'quic') {
     return {
       enabled: true,
-      server_name: params.sni || 'nightline.railway',
+      server_name: params.sni || 'localhost',
       alpn: ib.protocol === 'hysteria2' ? ['h3'] : ib.protocol === 'tuic' ? ['h3'] : ['h2', 'http/1.1'],
       certificate_path: ctx.certs.certificateFile || undefined,
       key_path: ctx.certs.keyFile || undefined,

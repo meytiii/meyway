@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { DATA_FILE, DATA_DIR, ensureDirs } from './env.js';
+import { DATA_FILE, DATA_DIR, ensureDirs, ADMIN_SECRET_PATH, PORTAL_SECRET_PATH, SUB_SECRET_PATH } from './env.js';
 import { DEFAULT_INBOUNDS } from './catalog.js';
 import { ROUTING_DEFAULTS } from './routing.js';
 
@@ -48,9 +48,12 @@ function defaults() {
       tcpPort: 0,
       theme: 'dark',
       lang: 'fa',
-      brand: 'NIGHTLINE',
-      tag: 'Railway',
+      brand: 'Console',
+      tag: 'Cloud',
       subPath: 'sub',
+      adminSecretPath: '',
+      portalSecretPath: '',
+      subSecretPath: '',
       publicStatus: true,
       autoRestartCores: true,
       lowMemory: true,
@@ -151,6 +154,34 @@ export function load() {
 
 export function get() {
   return doc || load();
+}
+
+export function getAdminSecretPath() {
+  if (ADMIN_SECRET_PATH) return ADMIN_SECRET_PATH;
+  const current = get();
+  if (current.settings?.adminSecretPath) return current.settings.adminSecretPath;
+  const generated = `admin-${hex(6)}`;
+  set((d) => { d.settings.adminSecretPath = generated; });
+  console.warn(`[store] NOTICE: Auto-generated ADMIN_SECRET_PATH: /${generated}. For persistent redeploys without volumes, set ADMIN_SECRET_PATH in your Railway service variables.`);
+  return generated;
+}
+
+export function getPortalSecretPath() {
+  if (PORTAL_SECRET_PATH) return PORTAL_SECRET_PATH;
+  const current = get();
+  if (current.settings?.portalSecretPath) return current.settings.portalSecretPath;
+  const generated = `portal-${hex(6)}`;
+  set((d) => { d.settings.portalSecretPath = generated; });
+  return generated;
+}
+
+export function getSubSecretPath() {
+  if (SUB_SECRET_PATH) return SUB_SECRET_PATH;
+  const current = get();
+  if (current.settings?.subSecretPath) return current.settings.subSecretPath;
+  const generated = `sub-${hex(6)}`;
+  set((d) => { d.settings.subSecretPath = generated; });
+  return generated;
 }
 
 export function set(mutator) {

@@ -132,7 +132,7 @@ export function requirementBanner(report) {
   const out = [
     '',
     `  ┌${line}┐`,
-    '  │  NIGHTLINE · Railway — REFUSING TO START (configuration)          │',
+    '  │  Configuration check failed — missing required environment        │',
     `  └${line}┘`,
   ];
   for (const item of report.fatal) {

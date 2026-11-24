@@ -62,7 +62,7 @@ export class HttpProxyServer {
     }
     if (!this.authorized(headers['proxy-authorization'])) {
       this.stats.denied += 1;
-      socket.end('HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm="NIGHTLINE"\r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
+      socket.end('HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm="Proxy"\r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
       return;
     }
 

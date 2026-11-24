@@ -12,20 +12,32 @@ const CERT_DIR = path.join(STATE_DIR, 'certs');
 
 export function ensureCerts() {
   fs.mkdirSync(CERT_DIR, { recursive: true });
-  const certPath = path.join(CERT_DIR, 'nightline-cert.pem');
-  const keyPath = path.join(CERT_DIR, 'nightline-key.pem');
+  const certPath = path.join(CERT_DIR, 'server-cert.pem');
+  const keyPath = path.join(CERT_DIR, 'server-key.pem');
+  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+    // Check if legacy cert exists and migrate
+    const oldCert = path.join(CERT_DIR, 'nightline-cert.pem');
+    const oldKey = path.join(CERT_DIR, 'nightline-key.pem');
+    if (fs.existsSync(oldCert) && fs.existsSync(oldKey)) {
+      try {
+        fs.copyFileSync(oldCert, certPath);
+        fs.copyFileSync(oldKey, keyPath);
+      } catch { /* ignore */ }
+    }
+  }
   if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
     try {
       execFileSync('openssl', [
         'req', '-x509', '-newkey', 'ec',
         '-pkeyopt', 'ec_paramgen_curve:prime256v1',
         '-nodes', '-days', '3650',
-        '-subj', '/CN=nightline.railway',
-        '-addext', 'subjectAltName=DNS:nightline.railway,DNS:localhost,IP:127.0.0.1',
+        '-subj', '/CN=localhost',
+        '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1',
         '-keyout', keyPath, '-out', certPath,
       ], { stdio: 'pipe' });
     } catch (err) {
-      console.error('[certs] openssl failed:', err.message);
+      // openssl might not be available in local test env
+      if (process.env.VERBOSE_STARTUP_LOGS) console.warn('[certs] openssl note:', err.message);
     }
   }
   return {
@@ -40,9 +52,11 @@ export function ensureCerts() {
  */
 export function certPin() {
   try {
-    const certPath = path.join(CERT_DIR, 'nightline-cert.pem');
-    if (!fs.existsSync(certPath)) return '';
-    const pem = fs.readFileSync(certPath, 'utf8');
+    const certPath = path.join(CERT_DIR, 'server-cert.pem');
+    const legacyPath = path.join(CERT_DIR, 'nightline-cert.pem');
+    const targetPath = fs.existsSync(certPath) ? certPath : fs.existsSync(legacyPath) ? legacyPath : null;
+    if (!targetPath) return '';
+    const pem = fs.readFileSync(targetPath, 'utf8');
     const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
     if (!b64) return '';
     const der = Buffer.from(b64, 'base64');

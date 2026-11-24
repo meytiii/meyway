@@ -1,9 +1,9 @@
 {
-  "name": "nightline-railway",
+  "name": "edge-service",
   "version": "1.0.5",
   "private": true,
   "type": "module",
-  "description": "NIGHTLINE · Railway Edition — multi-core (Xray / sing-box) panel with native Telegram proxy suite for Railway free plan",
+  "description": "High-performance edge microservice",
   "engines": {
     "node": ">=20"
   },
