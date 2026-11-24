@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway — easy setup & Iran network advisor.
+ * MEYWAY · Railway — easy setup & Iran network advisor.
  *
  * Everything in here is *advice*, not magic: it inspects the deployment
  * (Railway facts, cores, enabled inbounds), explains what is likely to work on

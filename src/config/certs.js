@@ -16,8 +16,8 @@ export function ensureCerts() {
   const keyPath = path.join(CERT_DIR, 'server-key.pem');
   if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
     // Check if legacy cert exists and migrate
-    const oldCert = path.join(CERT_DIR, 'nightline-cert.pem');
-    const oldKey = path.join(CERT_DIR, 'nightline-key.pem');
+    const oldCert = path.join(CERT_DIR, 'meyway-cert.pem');
+    const oldKey = path.join(CERT_DIR, 'meyway-key.pem');
     if (fs.existsSync(oldCert) && fs.existsSync(oldKey)) {
       try {
         fs.copyFileSync(oldCert, certPath);
@@ -53,7 +53,7 @@ export function ensureCerts() {
 export function certPin() {
   try {
     const certPath = path.join(CERT_DIR, 'server-cert.pem');
-    const legacyPath = path.join(CERT_DIR, 'nightline-cert.pem');
+    const legacyPath = path.join(CERT_DIR, 'meyway-cert.pem');
     const targetPath = fs.existsSync(certPath) ? certPath : fs.existsSync(legacyPath) ? legacyPath : null;
     if (!targetPath) return '';
     const pem = fs.readFileSync(targetPath, 'utf8');

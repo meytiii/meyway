@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — protocol catalogue
+ * MEYWAY · Railway Edition — protocol catalogue
  *
  * Every entry describes one "inbound recipe": which core runs it, which
  * transport + security it speaks and how it can actually reach the internet

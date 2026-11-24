@@ -10,7 +10,7 @@ await p.goto(`http://127.0.0.1:8080/u/${token}`, { waitUntil: 'networkidle' });
 await p.waitForTimeout(900);
 // present the real Railway domain instead of the local test host, and hide the token
 await p.evaluate(() => {
-  const host = 'nightline-railway-production.up.railway.app';
+  const host = 'meyway-railway-production.up.railway.app';
   const walk = (root) => {
     for (const n of root.querySelectorAll('*')) {
       for (const t of n.childNodes) {
@@ -34,6 +34,6 @@ await p.evaluate(() => {
   document.querySelectorAll('.qrbox, .lk-uri, .acct-name, .ep-val, .lk-cap, .u-uri, .sub-url').forEach((el) => el.classList.add('redact'));
 });
 await p.waitForTimeout(200);
-await p.screenshot({ path: '/home/user/nightline-railway/assets/screens/portal.png', fullPage: true });
+await p.screenshot({ path: '/home/user/meyway-railway/assets/screens/portal.png', fullPage: true });
 console.log('portal shot ok');
 await b.close();

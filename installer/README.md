@@ -1,4 +1,4 @@
-# نصب‌کنندهٔ NIGHTLINE · Railway
+# نصب‌کنندهٔ MEYWAY · Railway
 
 یک اسکریپت که کل مسیر نصب را برایت انجام می‌دهد: توکن Railway می‌گیرد، آخرین نسخهٔ مخزن را می‌آورد، پروژه و سرویس می‌سازد، متغیرها را ست می‌کند، دیپلوی می‌کند و آدرس پنل را چاپ می‌کند.
 
@@ -8,7 +8,7 @@
 
 1. وارد <https://railway.com/dashboard> شو.
 2. روی آواتار حساب → **Account Settings** → تب **Tokens**.
-3. **Create Token** → یک نام بده (مثلاً `nightline`) → **Create**.
+3. **Create Token** → یک نام بده (مثلاً `meyway`) → **Create**.
 4. توکن را کپی کن. (فقط یک بار نشان داده می‌شود.)
 
 > توکن مثل رمز حساب است: در چت و اسکرین‌شات نگذارش. نصب‌کننده آن را فقط در متغیر محیطی همان ترمینال استفاده می‌کند و در هیچ فایلی ذخیره نمی‌کند.
@@ -20,8 +20,8 @@
 **لینوکس / مک:**
 
 ```bash
-git clone https://github.com/youdidking/NightLine-Railway
-cd NightLine-Railway
+git clone https://github.com/youdidking/Meyway-Railway
+cd Meyway-Railway
 bash installer/install.sh
 ```
 
@@ -41,9 +41,9 @@ RAILWAY_TOKEN=xxxx RAILWAY_PROJECT_ID=yyyy bash installer/install.sh
 | :--- | :--- | :--- |
 | `RAILWAY_TOKEN` | — | توکن حساب (اجباری) |
 | `RAILWAY_PROJECT_ID` | — | اگر پروژه از قبل ساخته‌ای، به همان وصل می‌شود |
-| `NIGHTLINE_PROJECT` | `nightline-railway` | نام پروژهٔ تازه |
-| `NIGHTLINE_REPO` | مخزن رسمی | آدرس مخزن دیگر |
-| `NIGHTLINE_DIR` | `./nightline-railway` | محل کلون |
+| `MEYWAY_PROJECT` | `meyway-railway` | نام پروژهٔ تازه |
+| `MEYWAY_REPO` | مخزن رسمی | آدرس مخزن دیگر |
+| `MEYWAY_DIR` | `./meyway-railway` | محل کلون |
 | `NL_PANEL_PORT` | `8080` | پورت پنل |
 | `NL_TCP_PORT` | `8443` | پورت mux که TCP Proxy باید به آن اشاره کند |
 
@@ -77,4 +77,4 @@ RAILWAY_TOKEN=xxxx RAILWAY_PROJECT_ID=yyyy bash installer/install.sh
 
 ---
 
-NIGHTLINE · Railway — رایگان و غیرقابل فروش · <https://github.com/youdidking/NightLine-Railway>
+MEYWAY · Railway — رایگان و غیرقابل فروش · <https://github.com/youdidking/Meyway-Railway>

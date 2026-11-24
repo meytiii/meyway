@@ -65,7 +65,7 @@ if (fs.existsSync(BIN.singbox)) {
 }
 
 notes.push(`${PRESETS.length} protocol recipes available`);
-notes.push(`store: ${path.join(DATA_DIR, 'nightline.json')} (${doc.users.length} users, ${doc.inbounds.length} inbounds)`);
+notes.push(`store: ${path.join(DATA_DIR, 'meyway.json')} (${doc.users.length} users, ${doc.inbounds.length} inbounds)`);
 notes.push(`panel root: ${ROOT}`);
 
 console.log('── notes ──');

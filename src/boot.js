@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — boot entry point.
+ * MEYWAY · Railway Edition — boot entry point.
  *
  * Railway rebuilds the container from the image on every restart, so code
  * written into /app at runtime never survives. The in-panel updater therefore

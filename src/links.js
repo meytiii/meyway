@@ -172,7 +172,7 @@ export function shortFor(inbound) {
 }
 
 export function labelFor(doc, inbound, user) {
-  const brand = doc.settings.brand || 'NIGHTLINE';
+  const brand = doc.settings.brand || 'MEYWAY';
   const tag = doc.settings.tag || 'Railway';
   const core = inbound.core === 'xray' ? 'XRAY' : 'SING';
   const proto = `${inbound.protocol.toUpperCase()}`;

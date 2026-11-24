@@ -3,7 +3,7 @@ import path from 'node:path';
 import { BIN_DIR } from './env.js';
 
 /**
- * NIGHTLINE · Railway Edition — Iranian routing rules (applied on the server)
+ * MEYWAY · Railway Edition — Iranian routing rules (applied on the server)
  *
  * The rules follow the layout of the "Iran v2ray rules" project by Chocolate4U
  * (https://github.com/Chocolate4U/Iran-v2ray-rules) and its sing-box / Clash

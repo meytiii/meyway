@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — boot guard
+ * MEYWAY · Railway Edition — boot guard
  *
  * The panel keeps every user, key and setting inside one JSON file that lives
  * on the Railway volume. Deploying without that volume (or without telling the

@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
 const exe = process.env.CHROME_BIN || (process.env.HOME + '/.cache/ms-playwright/chromium-1187/chrome-linux/chrome');
-const OUT = '/home/user/nightline-railway/assets/screens';
+const OUT = '/home/user/meyway-railway/assets/screens';
 mkdirSync(OUT, { recursive: true });
 
 const REDACT_JS = () => {

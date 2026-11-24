@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200" viewBox="0 0 760 200" role="img" aria-label="NIGHTLINE Railway logo">
-  <title>NIGHTLINE · Railway</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200" viewBox="0 0 760 200" role="img" aria-label="MEYWAY Railway logo">
+  <title>MEYWAY · Railway</title>
   <!-- rail mark: framed track, three ties, a red signal at the junction -->
   <g fill="none" stroke="#15130f" stroke-width="8">
     <rect x="24" y="32" width="136" height="136"/>
@@ -9,7 +9,7 @@
   <circle cx="160" cy="40" r="6.5" fill="#7c211a"/>
 
   <text x="188" y="112" font-family="JetBrains Mono, ui-monospace, DejaVu Sans Mono, monospace"
-        font-size="76" font-weight="700" letter-spacing="-1.5" fill="#15130f">NIGHTLINE</text>
+        font-size="76" font-weight="700" letter-spacing="-1.5" fill="#15130f">MEYWAY</text>
 
   <path d="M190 128h522" stroke="#15130f" stroke-width="2"/>
 

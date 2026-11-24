@@ -7,7 +7,7 @@
 | متغیر | چه زمانی | مقدار نمونه |
 | :--- | :--- | :--- |
 | `PORT` | همیشه | `8080` |
-| `RAILWAY_PUBLIC_DOMAIN` | بعد از ساخت دامنه | `nightline-production.up.railway.app` |
+| `RAILWAY_PUBLIC_DOMAIN` | بعد از ساخت دامنه | `meyway-production.up.railway.app` |
 | `RAILWAY_TCP_PROXY_DOMAIN` | بعد از ساخت TCP Proxy | `roundhouse.proxy.rlwy.net` |
 | `RAILWAY_TCP_PROXY_PORT` | بعد از ساخت TCP Proxy | `11105` |
 | `RAILWAY_TCP_APPLICATION_PORT` | بعد از ساخت TCP Proxy | `8443` |
@@ -44,7 +44,7 @@
 ## پایداری داده
 
 بدون Volume، مسیر داده `/data` موقتی است و با هر دیپلوی پاک می‌شود. با Volume:
-- `nightline.json` (کاربران، اینباندها، سکرت‌ها، تنظیمات)
+- `meyway.json` (کاربران، اینباندها، سکرت‌ها، تنظیمات)
 - `state/xray.json` و `state/sing-box.json` (کانفیگ تولیدشده)
 - `state/reality.json` و `state/certs/*` (کلید REALITY و گواهی خودامضا)
 - `logs/*.log`
@@ -98,7 +98,7 @@ curl -s https://<domain>/api/bootstrap | head -c 400
   آینه به ابتدای آدرس کامل چسبانده می‌شود: `https://gh-proxy.com/https://github.com/...`
 - اگر `mtg` دانلود نشود، بیلد **موفق** می‌ماند و پنل با پیام «باینری موجود نیست» فقط MTProto را خاموش نشان می‌دهد؛ `xray` و `sing-box` اگر نیایند بیلد را متوقف می‌کنند.
 - **پایهٔ ایمیج `node:22-bookworm-slim` است، نه Alpine.** باینری رسمی sing-box داینامیک و وابسته به glibc است؛ روی Alpine خطای `/app/bin/sing-box: not found` (exit 127) می‌دهد. xray و mtg استاتیک‌اند.
-- برای بیلد محلی: `docker build -t nightline .` و سپس `docker run -p 8080:8080 -p 8443:8443 -v $PWD/data:/data nightline`.
+- برای بیلد محلی: `docker build -t meyway .` و سپس `docker run -p 8080:8080 -p 8443:8443 -v $PWD/data:/data meyway`.
 
 
 ---

@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — panel front-end
+ * MEYWAY · Railway Edition — panel front-end
  * Vanilla ES module, no build step, no framework. Every string is dual
  * language (fa/en) and toggled with html[data-lang].
  */
@@ -626,7 +626,7 @@ function freeStrip(extraFa = '', extraEn = '') {
         'این پنل نرم‌افزار آزاد است؛ فروش سورس، پنل یا لینک ساخته‌شده با آن ممنوع است.',
         'open-source software; selling the source, the panel or links built with it is prohibited.',
       )}${extraFa ? ' ' + extraFa : ''}${extraEn ? ' ' + extraEn : ''}</span>
-      <span class="mono">NIGHTLINE · RAILWAY</span>
+      <span class="mono">MEYWAY · RAILWAY</span>
     </div>`;
 }
 
@@ -1360,7 +1360,7 @@ function hostsAlertHtml() {
 function updateBannerHtml() {
   const u = S.update;
   const cur = (S.state && S.state.app && S.state.app.version) || '';
-  const repo = 'https://github.com/youdidking/NightLine-Railway';
+  const repo = 'https://github.com/youdidking/Meyway-Railway';
 
   if (!u) {
     return `
@@ -1441,7 +1441,7 @@ function renderSettings() {
   if (!S.update && !S.updateBusy) {
     S.updateBusy = true;
     api('/api/update').then((u) => { S.update = u; refreshUpdateCard(); })
-      .catch(() => { S.update = { ok: false, error: 'offline', repo: 'https://github.com/youdidking/NightLine-Railway' }; refreshUpdateCard(); })
+      .catch(() => { S.update = { ok: false, error: 'offline', repo: 'https://github.com/youdidking/Meyway-Railway' }; refreshUpdateCard(); })
       .finally(() => { S.updateBusy = false; });
   }
   $('#pane-settings').innerHTML = `
@@ -1484,8 +1484,8 @@ function renderSettings() {
       <div class="card">
         <p class="kicker">${icon('github', 'ic ic-brand')}${t('درباره و مخزن پروژه', 'ABOUT & REPOSITORY')}</p>
         <div class="stack-sm">
-          <a class="repo-chip" href="https://github.com/youdidking/NightLine-Railway" target="_blank" rel="noopener">
-            <svg class="ic ic-sm ic-brand"><use href="#i-github"/></svg>youdidking/NightLine-Railway
+          <a class="repo-chip" href="https://github.com/youdidking/Meyway-Railway" target="_blank" rel="noopener">
+            <svg class="ic ic-sm ic-brand"><use href="#i-github"/></svg>youdidking/Meyway-Railway
           </a>
         </div>
         <p class="hint">${t('نسخهٔ نصب‌شده: ' + st.app.version + ' · پنل رایگان است و فروش آن ممنوع.', 'Installed version: ' + st.app.version + ' · free panel, never for sale.')}</p>
@@ -1847,7 +1847,7 @@ async function onAction(act, arg, el) {
       try {
         S.update = await api('/api/update?force=1');
       } catch (err) {
-        S.update = { ok: false, error: err.message, repo: 'https://github.com/youdidking/NightLine-Railway' };
+        S.update = { ok: false, error: err.message, repo: 'https://github.com/youdidking/Meyway-Railway' };
       } finally {
         S.updateBusy = false;
       }
@@ -2024,7 +2024,7 @@ function showAuth() {
   $('#auth-kicker-en').textContent = needsSetup ? 'CREATE OPERATOR' : 'OPERATOR SIGN-IN';
   $('#auth-title').innerHTML = needsSetup
     ? t('رمز و نام کاربری مدیر را تعیین کنید', 'Choose the operator credentials')
-    : t('به ایستگاه نایت‌لاین خوش آمدید', 'Welcome back to NightLine');
+    : t('به ایستگاه مِی‌وی خوش آمدید', 'Welcome back to Meyway');
   $('#auth-submit-fa').textContent = needsSetup ? 'ساخت پنل' : 'ورود به پنل';
   $('#auth-submit-en').textContent = needsSetup ? 'CREATE PANEL' : 'ENTER PANEL';
   $('#auth-env').textContent = (S.boot.facts.isRailway ? 'RAILWAY' : 'LOCAL') + ' · ' + (S.boot.app.version || '');
@@ -2217,7 +2217,7 @@ async function loadState() {
 }
 
 async function boot() {
-  document.title = 'NIGHTLINE · RAILWAY — FREE & NOT FOR SALE';
+  document.title = 'MEYWAY · RAILWAY — FREE & NOT FOR SALE';
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   applyLang(localStorage.getItem(LANG_KEY) || 'fa');
 

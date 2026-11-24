@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — runtime environment
+ * MEYWAY · Railway Edition — runtime environment
  *
  * Two variables are mandatory on Railway — `PORT` and `DATA_DIR` — and the
  * DATA_DIR must be the mount path of an attached volume. The boot guard
@@ -46,7 +46,7 @@ function pickDataDir() {
 }
 
 export const DATA_DIR = pickDataDir();
-export const DATA_FILE = path.join(DATA_DIR, 'nightline.json');
+export const DATA_FILE = path.join(DATA_DIR, 'meyway.json');
 export const LOG_DIR = path.join(DATA_DIR, 'logs');
 export const STATE_DIR = path.join(DATA_DIR, 'state');
 export const BIN_DIR = process.env.NL_BIN_DIR || path.join(ROOT, 'bin');

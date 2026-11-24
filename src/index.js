@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — entry point.
+ * MEYWAY · Railway Edition — entry point.
  */
 import { ensureDirs, PORT, PANEL_PORTS, PORT_CONFLICT, MUX_PORT, DATA_DIR, BIN, APP, IS_RAILWAY, RAILWAY, VERBOSE_STARTUP_LOGS } from './env.js';
 import { auditEnvironment, requirementBanner } from './guard.js';

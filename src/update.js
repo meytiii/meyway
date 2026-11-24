@@ -18,10 +18,10 @@ import path from 'node:path';
 import { DATA_DIR, ROOT, APP } from './env.js';
 
 const run = promisify(execFile);
-const REPO = 'youdidking/NightLine-Railway';
+const REPO = 'youdidking/Meyway-Railway';
 const API = `https://api.github.com/repos/${REPO}/releases/latest`;
 const TARBALL_FALLBACK = `https://codeload.github.com/${REPO}/tar.gz/refs/heads/main`;
-const UA = `NightLine-Railway/${APP.version} (+https://github.com/${REPO})`;
+const UA = `Meyway-Railway/${APP.version} (+https://github.com/${REPO})`;
 
 /** Which top-level paths an update is allowed to overwrite. */
 const CODE_PATHS = ['src', 'public', 'docs', 'assets', 'scripts', 'installer', 'README.md', 'Dockerfile', 'railway.json', 'package.json', 'LICENSE'];
@@ -220,7 +220,7 @@ export async function applyUpdate({ onLog = () => {} } = {}) {
   const source = path.join(stage, root);
   if (!existsSync(path.join(source, 'src', 'index.js'))) {
     rmSync(stage, { recursive: true, force: true });
-    throw new Error('release archive is not a NightLine build');
+    throw new Error('release archive is not a Meyway build');
   }
 
   let version = APP.version;

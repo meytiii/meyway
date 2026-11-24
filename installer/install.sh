@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  NIGHTLINE · Railway — نصب‌کنندهٔ خودکار
+#  MEYWAY · Railway — نصب‌کنندهٔ خودکار
 #
 #  این اسکریپت آخرین نسخهٔ مخزن را می‌گیرد، یک پروژهٔ Railway می‌سازد،
 #  سرویس را دیپلوی می‌کند، متغیرها را می‌گذارد و آدرس پنل را چاپ می‌کند.
@@ -10,9 +10,9 @@
 #  ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO_URL="${NIGHTLINE_REPO:-https://github.com/youdidking/NightLine-Railway}"
-PROJECT_NAME="${NIGHTLINE_PROJECT:-nightline-railway}"
-WORKDIR="${NIGHTLINE_DIR:-$PWD/nightline-railway}"
+REPO_URL="${MEYWAY_REPO:-https://github.com/youdidking/Meyway-Railway}"
+PROJECT_NAME="${MEYWAY_PROJECT:-meyway-railway}"
+WORKDIR="${MEYWAY_DIR:-$PWD/meyway-railway}"
 PANEL_PORT="${NL_PANEL_PORT:-8080}"
 TCP_PORT="${NL_TCP_PORT:-8443}"
 
@@ -47,7 +47,7 @@ cat <<'TXT'
   برای گرفتن توکن:
     ۱) وارد https://railway.com/dashboard شو
     ۲) Account Settings → Tokens → Create Token
-    ۳) یک نام بده (مثلاً nightline) و توکن را کپی کن
+    ۳) یک نام بده (مثلاً meyway) و توکن را کپی کن
   توکن فقط روی همین دستگاه در متغیر محیطی RAILWAY_TOKEN استفاده می‌شود،
   در هیچ فایلی ذخیره یا چاپ نمی‌شود.
 TXT
@@ -145,6 +145,6 @@ cat <<TXT
 آدرس پنل:  ${PANEL_URL}
 اولین ورود:  همان آدرس را باز کن → فرم ساخت حساب مدیر می‌آید.
 
-NIGHTLINE · Railway — رایگان و غیرقابل فروش
-https://github.com/youdidking/NightLine-Railway
+MEYWAY · Railway — رایگان و غیرقابل فروش
+https://github.com/youdidking/Meyway-Railway
 TXT

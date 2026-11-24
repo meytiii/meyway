@@ -168,7 +168,7 @@ export function xrayJson(doc, user) {
   outbounds.push({ tag: 'direct', protocol: 'freedom', settings: {} });
   outbounds.push({ tag: 'block', protocol: 'blackhole', settings: {} });
   return {
-    remarks: `NIGHTLINE · Railway · ${user.name}`,
+    remarks: `MEYWAY · Railway · ${user.name}`,
     log: { loglevel: 'warning' },
     dns: {
       // DoH first: plain UDP:53 is hijacked by most Iranian ISPs
@@ -385,7 +385,7 @@ export function clashYaml(doc, user) {
   if (!names.length) lines.push('  []');
   lines.push('');
   lines.push('proxy-groups:');
-  lines.push('  - name: "NIGHTLINE"');
+  lines.push('  - name: "MEYWAY"');
   lines.push('    type: select');
   lines.push('    proxies:');
   for (const n of names) lines.push(`      - ${yamlStr(n)}`);
@@ -410,7 +410,7 @@ export function clashYaml(doc, user) {
   }
   lines.push('rules:');
   for (const rule of clashRules(route)) lines.push(`  - ${rule}`);
-  lines.push('  - MATCH,NIGHTLINE');
+  lines.push('  - MATCH,MEYWAY');
   return lines.join('\n') + '\n';
 }
 

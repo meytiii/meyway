@@ -150,7 +150,7 @@ for (const p of probes) {
 }
 
 console.log('\n── 2. Keyword Leak Scan ──');
-const FORBIDDEN_REGEX = /(nightline|railynx|xray|sing-box|vless|vmess|trojan|shadowsocks|v2ray|hiddify|clash|mtproto|proxy|vpn)/i;
+const FORBIDDEN_REGEX = /(meyway|railynx|xray|sing-box|vless|vmess|trojan|shadowsocks|v2ray|hiddify|clash|mtproto|proxy|vpn)/i;
 
 let leakCount = 0;
 for (const [idx, r] of publicResponses.entries()) {

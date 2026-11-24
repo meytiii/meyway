@@ -1,5 +1,5 @@
 /**
- * NIGHTLINE · Railway Edition — persistent store
+ * MEYWAY · Railway Edition — persistent store
  *
  * A single JSON document (no database) written atomically to the mounted
  * volume, exactly like the Cloudflare edition keeps everything in one KV
@@ -217,7 +217,7 @@ export function writeNow() {
   saving = true;
   try {
     ensureDirs();
-    const tmp = path.join(DATA_DIR, `.nightline.${process.pid}.tmp`);
+    const tmp = path.join(DATA_DIR, `.meyway.${process.pid}.tmp`);
     fs.writeFileSync(tmp, JSON.stringify(doc, null, 1));
     fs.renameSync(tmp, DATA_FILE);
   } catch (err) {
